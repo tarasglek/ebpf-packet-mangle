@@ -66,9 +66,9 @@ __u16 old_port, __u16 new_port)
         bpf_skb_store_bytes(skb, nh_off + offsetof(struct tcphdr, dest), &new_port, sizeof(new_port), 0);
 }
 
-static inline int lb_do_ipv4(struct __sk_buff *skb, int nh_off)
+static inline int lb_do_ipv4(struct __sk_buff *skb, int nh_off, __u16 old_port,__u16 new_port)
 {
-        __u16 dport, dport_new = 8080, off;
+        __u16 dport, off;
         __u8 ip_proto, ip_vl;
         ip_proto = load_byte(skb, nh_off + offsetof(struct iphdr, protocol));
         if (ip_proto != IPPROTO_TCP)
@@ -79,20 +79,19 @@ static inline int lb_do_ipv4(struct __sk_buff *skb, int nh_off)
         else
                 nh_off += (ip_vl & 0xF) << 2;
         dport = load_half(skb, nh_off + offsetof(struct tcphdr, dest));
-        if (dport != 5555)
+        if (dport != old_port)
                 return 0;
         off = skb->queue_mapping & 7;
-        set_tcp_dport(skb, nh_off - BPF_LL_OFF, dport, __cpu_to_be16(80));
+        set_tcp_dport(skb, nh_off - BPF_LL_OFF, dport, __cpu_to_be16(new_port));
         return TC_ACT_UNSPEC;
 }
-
 
 __section("egress")
 int tc_egress(struct __sk_buff *skb)
 {
         int nh_off = BPF_LL_OFF + ETH_HLEN;
         if (skb->protocol == __constant_htons(ETH_P_IP)) {
-                return lb_do_ipv4(skb, nh_off);
+                return lb_do_ipv4(skb, nh_off, 5555, 80);
         }
         return account_data(skb, 1);
 }

@@ -1,6 +1,8 @@
 set -e -x
 DEVICE=wlp3s0
-clang -g -O2 -Wall -target bpf -c tc-example.c -o tc-example.o
+KERNEL_SRCTREE=/usr/src/linux-headers-5.6.15-050615
+LIBBPF=${KERNEL_SRCTREE}/tools/lib/bpf/libbpf.a
+clang -I${KERNEL_SRCTREE}/tools/lib/bpf/ -g -O2 -Wall -target bpf -c tc-example.c -o tc-example.o
 
 tc filter show dev $DEVICE ingress
 

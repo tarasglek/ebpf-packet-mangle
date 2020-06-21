@@ -10,16 +10,12 @@
 /* ELF map definition */
 
 /* Some used BPF function calls. */
-static int (*bpf_skb_store_bytes)(void *ctx, int off, void *from,
-int len, int flags) =
-(void *) BPF_FUNC_skb_store_bytes;
-static int (*bpf_l4_csum_replace)(void *ctx, int off, int from,
-int to, int flags) =
-(void *) BPF_FUNC_l4_csum_replace;
-static void *(*bpf_map_lookup_elem)(void *map, void *key) =
-(void *) BPF_FUNC_map_lookup_elem;
+// https://elixir.bootlin.com/linux/v4.7/source/include/uapi/linux/bpf.h#L192
+static int (*bpf_skb_store_bytes)(void *ctx, int off, void *from, int len, int flags) = (void *) BPF_FUNC_skb_store_bytes;
+static int (*bpf_l4_csum_replace)(void *ctx, int off, int from, int to, int flags) = (void *) BPF_FUNC_l4_csum_replace;
+static void *(*bpf_map_lookup_elem)(void *map, void *key) = (void *) BPF_FUNC_map_lookup_elem;
 /* Some used BPF intrinsics. */
-unsigned long long load_byte(void *skb, unsigned long long off)
-asm ("llvm.bpf.load.byte");
-unsigned long long load_half(void *skb, unsigned long long off)
-asm ("llvm.bpf.load.half");
+// https://kernel.googlesource.com/pub/scm/linux/kernel/git/vgupta/arc/+/arc-4.6-rc1/samples/bpf/bpf_helpers.h
+unsigned long long load_byte(void *skb, unsigned long long off) asm ("llvm.bpf.load.byte");
+unsigned long long load_half(void *skb, unsigned long long off) asm ("llvm.bpf.load.half");
+unsigned long long load_word(void *skb, unsigned long long off) asm("llvm.bpf.load.word");
